@@ -1,0 +1,35 @@
+import cv2
+import serial
+import time
+
+#Port for laptop and /dev/ttyACM0 for Pi
+
+arduino = serial.Serial(port='COM6'// '/dev/ttyACM0', baudrate=115200, timeout=1)
+detector = cv2.QRCodeDetector()
+
+def write_read(x):
+    arduino.write(bytes(x, 'utf-8'))
+    time.sleep(0.05)
+    data = arduino.readline()
+    return data
+cap = cv2.VideoCapture(0)
+
+
+
+while True:
+    _, frame = cap.read()
+    data, bbox, _ = detector.detectAndDecode(frame)
+    cv2.imshow("DD", frame)
+    print(data)
+    if (data=="Diaa"):
+        arduino.write(b'h')
+    elif (data=="Omar"):
+        arduino.write(b'l')
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+
+
+        break
+
+
+cap.release()
+cv2.destroyAllWindows()

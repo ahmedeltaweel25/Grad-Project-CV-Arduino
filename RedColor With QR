@@ -2,21 +2,23 @@ import numpy as np
 import cv2
 import time
 import serial
-#arduino = serial.Serial(port='COM6', baudrate=115200, timeout=1)
+
+data = 0
+arduino = serial.Serial('/dev/ttyACM0', baudrate=115200, timeout=1)
 
 
 
-#arduino = serial.Serial(port='COM6', baudrate=115200, timeout=.1)
-#def write_read(x):
-    #arduino.write(bytes(x, 'utf-8'))
-    #time.sleep(0.05)
-    #data = arduino.readline()
-    #return data
+
+def write_read(x):
+    arduino.write(bytes(x, 'utf-8'))
+    time.sleep(0.05)
+    data = arduino.readline()
+    return data
 
 # Capturing video through webcam
 detector = cv2.QRCodeDetector()
 
-webcam = cv2.VideoCapture(0)
+webcam = cv2.VideoCapture(1)
 
 
 # Start a while loop
@@ -60,10 +62,16 @@ while True:
         area = cv2.contourArea(contour)
         if (area > 300):
             color=0
-            #arduino.write(b'h')
+            arduino.write(b's')
             data, bbox, _ = detector.detectAndDecode(imageFrame)
             cv2.imshow("QR", imageFrame)
             print(data)
+            if(data!=0):
+                    arduino.write(b'l')
+                if(data==1):
+                    arduino.write(b'h')
+                else:
+                    break
             x, y, w, h = cv2.boundingRect(contour)
             imageFrame = cv2.rectangle(imageFrame, (x, y),
                                        (x + w, y + h),
@@ -72,7 +80,7 @@ while True:
             cv2.putText(imageFrame, "Red Colour", (x, y),
                         cv2.FONT_HERSHEY_SIMPLEX, 1.0,
                         (0, 0, 255))
-
+    print(data)
     # Program Termination
     cv2.imshow("Multiple Color Detection in Real-TIme", imageFrame)
     cv2.imshow("RED MASK", res_red)
@@ -80,3 +88,4 @@ while True:
         webcam.release()
         cv2.destroyAllWindows()
         break
+
